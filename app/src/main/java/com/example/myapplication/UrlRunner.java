@@ -23,7 +23,9 @@ public class UrlRunner implements Runnable {
         RECV_OUTBOX,
         SEND,
         CLEAR,
-        CLEARALL
+        CLEARALL,
+        GET_LOCATION,
+        SET_LOCATION,
     }
     public String s;
     public String login;
@@ -31,6 +33,7 @@ public class UrlRunner implements Runnable {
     public String message;
     public String recipient;
     public String server;
+    public String location;
     public boolean use_http_post;
     public UrlResultCallback callback;
     public ServerCmd command;
@@ -39,6 +42,7 @@ public class UrlRunner implements Runnable {
         password = "";
         message = "";
         recipient = "";
+        location = "";
         command = ServerCmd.RECV;
         callback = null;
         use_http_post = true;
@@ -181,6 +185,13 @@ public class UrlRunner implements Runnable {
                     cmd_str = "&send=%22%22";
                     cmd_str += "&to=%22" + recipient + "%22";
                     cmd_str += "&message=%22" + message + "%22";
+                    break;
+                case GET_LOCATION:
+                    cmd_str = "&get_location=%22%22";
+                    cmd_str += "&name=%22" + recipient + "%22";
+                    break;
+                case SET_LOCATION:
+                    cmd_str = "&set_location=%22" + location + "%22";
                     break;
             }
             String login_str = "&id=%22" + login + "%22";

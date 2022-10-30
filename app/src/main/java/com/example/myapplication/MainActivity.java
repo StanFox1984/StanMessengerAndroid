@@ -3,6 +3,7 @@ package com.example.myapplication;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
@@ -40,6 +41,11 @@ public class MainActivity extends AppCompatActivity {
         i.putExtra("register", false);
         i.putExtra("server", server.getText().toString());
         startActivity(i);
+    }
+
+    public void webapp(View view) {
+        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://bayes-prediction-network-54bha.ondigitalocean.app/StanMessenger"));
+        startActivity(browserIntent);
     }
 
     public void register(View view) {

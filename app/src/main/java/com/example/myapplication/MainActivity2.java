@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.graphics.Color;
+import android.location.Location;
 import android.os.Bundle;
 import android.text.Spannable;
 import android.text.SpannableString;
@@ -21,6 +22,12 @@ public class MainActivity2 extends AppCompatActivity {
     public String password;
     public String server;
     public boolean register;
+    public class PassThroughLoader implements UrlRunner.UrlResultCallback {
+        @Override
+        public void ResultCallback(String result_str) {
+            return;
+        }
+    }
     public class InboxLoader implements UrlRunner.UrlResultCallback {
         public class Message {
             public String date;
@@ -71,6 +78,10 @@ public class MainActivity2 extends AppCompatActivity {
                 final_string += "\n";
             }
 
+            if (messages.isEmpty()) {
+                final_string = result_str;
+            }
+
             SpannableString spannable = new SpannableString(final_string);
             for(Message msg : messages)
             {
@@ -79,6 +90,7 @@ public class MainActivity2 extends AppCompatActivity {
             inbox.setText(spannable);
         }
     }
+    public InboxLoader loader;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -96,14 +108,29 @@ public class MainActivity2 extends AppCompatActivity {
             runner.command = UrlRunner.ServerCmd.REGISTER;
         else
             runner.command = UrlRunner.ServerCmd.RECV;
-        runner.callback = new InboxLoader();
+        loader = new InboxLoader();
+        runner.callback = loader;
         executorService = Executors.newFixedThreadPool(4);
+        executorService.execute(runner);
+
+        runner.callback = new PassThroughLoader();
+        runner.command = UrlRunner.ServerCmd.SET_LOCATION;
+        Location loc = LocationTracker.get_location(this);
+        runner.location = String.valueOf(loc.getLongitude()) + "," + String.valueOf(loc.getLatitude());
         executorService.execute(runner);
     }
 
     public UrlRunner runner;
     public void send_message(View view) {
         Intent i = new Intent(this, MainActivity3.class);
+        i.putExtra("login", login);
+        i.putExtra("password", password);
+        i.putExtra("server", server);
+        startActivity(i);
+    }
+
+    public void map(View view) {
+        Intent i = new Intent(this, TrackActivity.class);
         i.putExtra("login", login);
         i.putExtra("password", password);
         i.putExtra("server", server);
@@ -119,21 +146,25 @@ public class MainActivity2 extends AppCompatActivity {
     }
 
     public void refresh(View view) {
+        runner.callback = loader;
         runner.command = UrlRunner.ServerCmd.RECV;
         executorService.execute(runner);
     }
 
     public void sent_folder(View view) {
+        runner.callback = loader;
         runner.command = UrlRunner.ServerCmd.RECV_OUTBOX;
         executorService.execute(runner);
     }
 
     public void clear(View view) {
+        runner.callback = loader;
         runner.command = UrlRunner.ServerCmd.CLEAR;
         executorService.execute(runner);
     }
 
     public void clearall(View view) {
+        runner.callback = loader;
         runner.command = UrlRunner.ServerCmd.CLEARALL;
         executorService.execute(runner);
     }
